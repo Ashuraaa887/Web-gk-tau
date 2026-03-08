@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
-    <title>Our Eternal Memories - Scroll Fixed</title>
+    <title>Our Eternal Memories - Gallery Updated</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&family=Dancing+Script:wght@600&display=swap');
 
@@ -19,8 +19,8 @@
             font-family: 'Poppins', sans-serif;
             background-color: var(--primary-bg);
             color: var(--text-main);
-            overflow-x: hidden; /* Hanya kunci horizontal */
-            overflow-y: auto;   /* Izinkan scroll vertikal */
+            overflow-x: hidden;
+            overflow-y: auto;
             min-height: 100vh;
         }
 
@@ -60,7 +60,7 @@
         #gallery-area { 
             position: relative; 
             width: 100%; 
-            min-height: 150vh; /* Tinggi lebih besar agar bisa di-scroll */
+            min-height: 150vh; 
             z-index: 5; 
             padding-bottom: 200px; 
         }
@@ -75,7 +75,7 @@
         #viewer-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 8, 9, 0.98); z-index: 12000; justify-content: center; align-items: center; backdrop-filter: blur(10px);
-            touch-action: none; /* Kunci scroll HANYA saat melihat foto */
+            touch-action: none;
         }
         .close-icon { position: absolute; top: 20px; right: 25px; color: var(--accent); font-size: 3rem; z-index: 13000; cursor: pointer; }
         
@@ -140,9 +140,11 @@
         const viewerOverlay = document.getElementById('viewer-overlay');
         let petals = [], particles = [], isTyping = false, currentBackText = "";
 
+        // DATA FOTO (Terupdate dengan foto baru)
         const photoData = [
             { img: 'rasyarisky.jpeg', label: 'Pramuka Days', back: 'Waktu mungkin berlalu, tapi kenangan ini akan tetap mekar selamanya.' },
-            { img: 'gk tau.jpeg', label: 'Hidden Story', back: 'Setiap momen memiliki ceritanya sendiri, bahkan yang tak terduga sekalipun.' }
+            { img: 'tauu.jpeg', label: 'Sweet Moment', back: 'Kedekatan yang tulus adalah harta yang tak ternilai harganya.' },
+            { img: 'gk tau.jpeg', label: 'Daily Life', back: 'Bahkan di saat-saat paling sederhana pun, ada cerita yang pantas untuk diingat.' }
         ];
 
         function startExperience() {
@@ -153,7 +155,6 @@
             animate();
         }
 
-        // --- ROTATION & SPOTLIGHT LOGIC ---
         let isDragging = false, lastX, rotY = 0;
 
         function moveSpotlight(e) {
@@ -177,7 +178,6 @@
             rotY += deltaX * 0.8;
             vCard.style.transform = `rotateY(${rotY}deg)`;
             lastX = x;
-
             const normRot = Math.abs(rotY % 360);
             if (normRot > 140 && normRot < 220) startTypewriter();
         }
@@ -185,10 +185,18 @@
         window.addEventListener('mousedown', handleDragStart);
         window.addEventListener('mousemove', handleDragMove);
         window.addEventListener('mouseup', () => isDragging = false);
-        
         window.addEventListener('touchstart', handleDragStart, {passive: false});
         window.addEventListener('touchmove', handleDragMove, {passive: false});
         window.addEventListener('touchend', () => isDragging = false);
+
+        // Klik untuk partikel bintang/hati
+        window.addEventListener('click', (e) => {
+            if (viewerOverlay.style.display === 'flex') return;
+            const x = e.clientX, y = e.clientY;
+            for(let i=0; i<6; i++) {
+                particles.push({ x, y, sx: (Math.random()-0.5)*4, sy: (Math.random()-0.5)*4, size: Math.random()*5, op: 1 });
+            }
+        });
 
         function renderGallery() {
             const area = document.getElementById('gallery-area');
@@ -201,7 +209,7 @@
                 let x, y, attempts = 0;
                 do {
                     x = Math.random() * (window.innerWidth - cW - 40) + 20;
-                    y = Math.random() * 800 + 150; // Jarak vertikal lebih jauh agar bisa di-scroll
+                    y = Math.random() * 800 + 150;
                     attempts++;
                 } while (occupied.some(p => Math.abs(p.x-x)<cW && Math.abs(p.y-y)<cH) && attempts < 50);
 
@@ -229,6 +237,12 @@
                 ctx.beginPath(); ctx.ellipse(p.x, p.y, 6, 4, Math.PI/4, 0, Math.PI*2); ctx.fill();
                 if(p.y > canvas.height) p.y = -10;
             });
+            particles.forEach((p, i) => {
+                p.x += p.sx; p.y += p.sy; p.op -= 0.02;
+                ctx.fillStyle = `rgba(255, 215, 0, ${p.op})`;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+                if(p.op <= 0) particles.splice(i, 1);
+            });
             requestAnimationFrame(animate);
         }
 
@@ -240,7 +254,7 @@
             document.getElementById('typewriter-text').innerHTML = "";
             rotY = 0; vCard.style.transform = `rotateY(0deg)`;
             isTyping = false;
-            document.body.style.overflow = 'hidden'; // Kunci scroll saat viewer buka
+            document.body.style.overflow = 'hidden';
         }
 
         function startTypewriter() {
@@ -260,7 +274,7 @@
 
         function closeViewer() { 
             viewerOverlay.style.display = 'none'; 
-            document.body.style.overflow = 'auto'; // Aktifkan scroll lagi setelah viewer tutup
+            document.body.style.overflow = 'auto'; 
         }
         function togglePlay() { const m = document.getElementById('bgMusic'); m.paused ? m.play() : m.pause(); }
     </script>
