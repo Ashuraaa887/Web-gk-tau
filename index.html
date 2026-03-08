@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes">
+    <title>Our Eternal Memories - Scroll Fixed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&family=Dancing+Script:wght@600&display=swap');
+
+        :root {
+            --primary-bg: #0d0a0b;
+            --accent: #ffb7c5;
+            --text-main: #f8f9fa;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            overflow-x: hidden; /* Hanya kunci horizontal */
+            overflow-y: auto;   /* Izinkan scroll vertikal */
+            min-height: 100vh;
+        }
+
+        /* --- LIGHTING & VINTAGE --- */
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 100%);
+            z-index: 2; pointer-events: none;
+        }
+
+        #spotlight {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at -100px -100px, transparent 15%, rgba(0,0,0,0.8) 45%, rgba(0,0,0,0.95) 100%);
+            z-index: 3; pointer-events: none;
+        }
+
+        #canvas-petals { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        /* --- HEADER MENGGUNUNG --- */
+        .curved-header {
+            position: relative; width: 100%; display: flex; justify-content: center; padding-top: 40px; z-index: 10; pointer-events: none;
+        }
+        .curved-header svg { width: 90%; max-width: 500px; height: auto; }
+        .curved-header text { font-family: 'Dancing Script', cursive; font-size: 45px; fill: var(--accent); }
+
+        /* --- WELCOME --- */
+        #welcome-screen {
+            height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: fixed; top: 0; left: 0; z-index: 11000; background: var(--primary-bg); transition: 1.5s;
+        }
+        #welcome-screen.fade-out { opacity: 0; visibility: hidden; }
+        .start-btn { margin-top: 40px; padding: 15px 40px; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 40px; cursor: pointer; letter-spacing: 4px; }
+
+        /* --- GALLERY --- */
+        #gallery-area { 
+            position: relative; 
+            width: 100%; 
+            min-height: 150vh; /* Tinggi lebih besar agar bisa di-scroll */
+            z-index: 5; 
+            padding-bottom: 200px; 
+        }
+        .card { position: absolute; width: 140px; height: 200px; cursor: pointer; transition: transform 0.4s ease; }
+        @media (min-width: 768px) { .card { width: 180px; height: 250px; } }
+
+        .card-inner { background: #fff; padding: 8px 8px 25px 8px; border-radius: 2px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); width: 100%; height: 100%; }
+        .card-inner img { width: 100%; height: 85%; object-fit: cover; pointer-events: none; }
+        .card-inner .label { color: #333; font-family: 'Dancing Script'; font-size: 1rem; text-align: center; margin-top: 5px; }
+
+        /* --- 3D VIEWER --- */
+        #viewer-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 8, 9, 0.98); z-index: 12000; justify-content: center; align-items: center; backdrop-filter: blur(10px);
+            touch-action: none; /* Kunci scroll HANYA saat melihat foto */
+        }
+        .close-icon { position: absolute; top: 20px; right: 25px; color: var(--accent); font-size: 3rem; z-index: 13000; cursor: pointer; }
+        
+        #viewer-container { perspective: 1500px; width: 300px; height: 420px; cursor: grab; }
+        #viewer-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.1s; }
+        .viewer-side { position: absolute; width: 100%; height: 100%; background: white; padding: 15px; backface-visibility: hidden; border-radius: 10px; }
+        .viewer-side img { width: 100%; height: 85%; object-fit: cover; border-radius: 5px; }
+        .viewer-back { transform: rotateY(180deg); display: flex; align-items: center; justify-content: center; text-align: center; color: #333; padding: 25px; font-family: 'Playfair Display'; font-size: 1.2rem; font-style: italic; }
+
+        .audio-player { position: fixed; bottom: 25px; right: 25px; z-index: 10000; }
+        .music-btn { background: rgba(255,183,197,0.2); color: var(--accent); width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--accent); backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body>
+
+    <div id="spotlight"></div>
+    <div class="vignette"></div>
+    <audio id="bgMusic" loop><source src="Taylor Swift-You're on your own kid.mp3" type="audio/mpeg"></audio>
+
+    <div id="welcome-screen">
+        <div class="welcome-content" style="text-align: center;">
+            <h2 style="font-family: 'Playfair Display'; font-size: 2.5rem;">Our Memories</h2>
+            <span style="color: var(--accent); font-family: 'Dancing Script'; font-size: 1.8rem;">In The Eternal Garden</span>
+            <br>
+            <button class="start-btn" onclick="startExperience()">Open the Book</button>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <canvas id="canvas-petals"></canvas>
+        <div class="curved-header">
+            <svg viewBox="0 0 500 150">
+                <path id="curve" d="M50,120 Q250,30 450,120" fill="transparent" />
+                <text width="500"><textPath xlink:href="#curve" startOffset="50%" text-anchor="middle">Our Memories</textPath></text>
+            </svg>
+        </div>
+        <div id="gallery-area"></div>
+    </div>
+
+    <div id="viewer-overlay">
+        <span class="close-icon" onclick="closeViewer()">×</span>
+        <div id="viewer-container">
+            <div id="viewer-card">
+                <div class="viewer-side viewer-front">
+                    <img id="view-img" src="">
+                    <div id="view-label" style="color:#222; text-align:center; font-family:'Dancing Script'; font-size:1.6rem; margin-top:10px;"></div>
+                </div>
+                <div class="viewer-side viewer-back">
+                    <p id="typewriter-text"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="audio-player"><button class="music-btn" onclick="togglePlay()">♫</button></div>
+
+    <script>
+        const canvas = document.getElementById('canvas-petals');
+        const ctx = canvas.getContext('2d');
+        const spotlight = document.getElementById('spotlight');
+        const vCard = document.getElementById('viewer-card');
+        const viewerOverlay = document.getElementById('viewer-overlay');
+        let petals = [], particles = [], isTyping = false, currentBackText = "";
+
+        const photoData = [
+            { img: 'rasyarisky.jpeg', label: 'Pramuka Days', back: 'Waktu mungkin berlalu, tapi kenangan ini akan tetap mekar selamanya.' },
+            { img: 'gk tau.jpeg', label: 'Hidden Story', back: 'Setiap momen memiliki ceritanya sendiri, bahkan yang tak terduga sekalipun.' }
+        ];
+
+        function startExperience() {
+            document.getElementById('welcome-screen').classList.add('fade-out');
+            document.getElementById('bgMusic').play();
+            initPetals();
+            renderGallery();
+            animate();
+        }
+
+        // --- ROTATION & SPOTLIGHT LOGIC ---
+        let isDragging = false, lastX, rotY = 0;
+
+        function moveSpotlight(e) {
+            const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            spotlight.style.background = `radial-gradient(circle at ${x}px ${y}px, transparent 15%, rgba(0,0,0,0.8) 45%, rgba(0,0,0,0.95) 100%)`;
+        }
+
+        function handleDragStart(e) {
+            if (viewerOverlay.style.display === 'flex') {
+                isDragging = true;
+                lastX = e.pageX || e.touches[0].pageX;
+            }
+        }
+
+        function handleDragMove(e) {
+            moveSpotlight(e);
+            if (!isDragging) return;
+            const x = e.pageX || e.touches[0].pageX;
+            const deltaX = x - lastX;
+            rotY += deltaX * 0.8;
+            vCard.style.transform = `rotateY(${rotY}deg)`;
+            lastX = x;
+
+            const normRot = Math.abs(rotY % 360);
+            if (normRot > 140 && normRot < 220) startTypewriter();
+        }
+
+        window.addEventListener('mousedown', handleDragStart);
+        window.addEventListener('mousemove', handleDragMove);
+        window.addEventListener('mouseup', () => isDragging = false);
+        
+        window.addEventListener('touchstart', handleDragStart, {passive: false});
+        window.addEventListener('touchmove', handleDragMove, {passive: false});
+        window.addEventListener('touchend', () => isDragging = false);
+
+        function renderGallery() {
+            const area = document.getElementById('gallery-area');
+            const isMobile = window.innerWidth < 768;
+            const cW = isMobile ? 140 : 180;
+            const cH = isMobile ? 200 : 250;
+            let occupied = [];
+
+            photoData.forEach((data, i) => {
+                let x, y, attempts = 0;
+                do {
+                    x = Math.random() * (window.innerWidth - cW - 40) + 20;
+                    y = Math.random() * 800 + 150; // Jarak vertikal lebih jauh agar bisa di-scroll
+                    attempts++;
+                } while (occupied.some(p => Math.abs(p.x-x)<cW && Math.abs(p.y-y)<cH) && attempts < 50);
+
+                occupied.push({x, y});
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.left = x+'px'; card.style.top = y+'px';
+                card.style.transform = `rotate(${(Math.random()*20)-10}deg)`;
+                card.onclick = () => openViewer(data.img, data.label, data.back);
+                card.innerHTML = `<div class="card-inner"><img src="${data.img}"><div class="label">${data.label}</div></div>`;
+                area.appendChild(card);
+            });
+        }
+
+        function initPetals() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            for(let i=0; i<30; i++) petals.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*2+1, op: Math.random()*0.5+0.2 });
+        }
+
+        function animate() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            petals.forEach(p => {
+                p.y += p.s; p.x += Math.sin(p.y/20);
+                ctx.fillStyle = `rgba(255,183,197,${p.op})`;
+                ctx.beginPath(); ctx.ellipse(p.x, p.y, 6, 4, Math.PI/4, 0, Math.PI*2); ctx.fill();
+                if(p.y > canvas.height) p.y = -10;
+            });
+            requestAnimationFrame(animate);
+        }
+
+        function openViewer(img, label, back) {
+            document.getElementById('view-img').src = img;
+            document.getElementById('view-label').innerText = label;
+            currentBackText = back;
+            viewerOverlay.style.display = 'flex';
+            document.getElementById('typewriter-text').innerHTML = "";
+            rotY = 0; vCard.style.transform = `rotateY(0deg)`;
+            isTyping = false;
+            document.body.style.overflow = 'hidden'; // Kunci scroll saat viewer buka
+        }
+
+        function startTypewriter() {
+            if (isTyping) return;
+            isTyping = true;
+            let j = 0;
+            const txt = document.getElementById('typewriter-text');
+            function type() {
+                if(j < currentBackText.length) {
+                    txt.innerHTML += currentBackText.charAt(j);
+                    j++;
+                    setTimeout(type, 50);
+                }
+            }
+            type();
+        }
+
+        function closeViewer() { 
+            viewerOverlay.style.display = 'none'; 
+            document.body.style.overflow = 'auto'; // Aktifkan scroll lagi setelah viewer tutup
+        }
+        function togglePlay() { const m = document.getElementById('bgMusic'); m.paused ? m.play() : m.pause(); }
+    </script>
+</body>
+</html>
